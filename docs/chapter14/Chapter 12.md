@@ -1,4 +1,4 @@
-# Chapter 14: Open Challenges in Offline Reinforcement Learning; Conservative Q-Learning
+# Chapter 12: Offline Reinforcement Learning
 
 ### **Author**: Reem Tarek Mohamed
 
@@ -161,16 +161,17 @@ So, we can describe the *Distributional Shift* problem formulation as follows:
 
 ---
 
-# 4. Proposed Solution
+# 4 Proposed Solutions
 
+## 4.1 The "Policy Constraint" Method
 Typical offline RL methods mitigate the *Distributional Shift* issue by constraining the learned policy $\pi$ away from OOD actions. In other words, by constraining how much the learned policy  $\pi$ differs from the behavior policy $\pi_\beta$, we can bound state *distributional shift* (Kakade and Langford, 2002; Schulman et al., 2015).
 " Only choose actions similar to what the dataset already contains" ,which is often referred to as the **"Policy Constraint"** method.
 
-## 4.1 Regularization
+## 4.2 Regularization
 
-However, **Regularization** adds a penalty term to the learning objective to enforce desirable behavior in the learned policy or value function, without necessarily constraining the policy to stay close to the behavior policy $\pi_\beta$ .
+Another widely used approach is **Regularization** . Rather than explicitly constraining the policy $\pi$ to remain close to the behavior policy $\pi_\beta$ , Regularization adds a penalty term to the learning objective to encourage desirable behavior in the learned policy or value function.
 
-### 4.1.1 Value Regularization
+### Value Regularization
 
 Value regularization modifies the value-learning objective:
 
@@ -181,7 +182,7 @@ $$
 **Meaning:**
 minimize Bellman error, while regularization $R(\phi)$ makes value estimates more conservative.This helps reduce **overestimation**, especially for **OOD actions**.
 
-## 4.2 Conservative Q-Learning CQL
+## 4.2.1 Conservative Q-Learning (CQL)
 
 In practice, CQL augments the standard Bellman error objective with a simple Q-value **regularizer** which is straightforward to implement on top of existing deep Q-learning and actor-critic implementations. 
 
@@ -210,12 +211,12 @@ $$\underbrace{\mathcal{E}(\mathcal{B}, \varphi) \text{ anchors in-distribution Q
 
 When $\alpha$ is chosen appropriately, the penalty **mostly affects OOD actions** ,while *in-distribution actions* are protected by the Bellman error term.
 
-### 4.2.1 But which actions should the penalty target and how do we choose them?
+### 4.2.1.1 But which actions should the penalty target and how do we choose them?
 
 This is determined by $\mu(a|s)$, a distribution over actions that controls 
 exactly where the conservative pressure is applied.
 
-### 4.2.2 What is $\mu$?
+### 4.2.1.2 What is $\mu$?
 
 The **"Adversarial Distribution"** : instead of randomly sampling actions or using $\pi_\beta$​, $\mu$ is **optimized** to find actions where Q-values are **highest** ; precisely the inflated OOD actions we want to **penalize**.
 
@@ -236,7 +237,7 @@ $$\mu(a \mid s) \propto \exp(Q_\varphi(s,a))$$
 This is a **softmax distribution** over Q-values — actions with higher Q-values 
 get assigned higher probability under $\mu$.
 
-### 4.2.3 $\mathcal{C}^0_{\text{CQL}}$ — The Basic Conservative Penalty
+### 4.2.1.3 $\mathcal{C}^0_{\text{CQL}}$ — The Basic Conservative Penalty
 
 The simplest choice of penalty is:
 
@@ -259,7 +260,7 @@ $$Q_\varphi(s,a) \leq Q^*(s,a) \quad \forall\ (s,a)$$
 
 To satisfy $Q_\varphi(s,a) \leq Q^*(s,a)\ \forall\ (s,a)$, the penalty pushes Q-values down **aggressively**, **underestimating** even *in-distribution actions* and leading to excessive suboptimal performance in practice.
 
-### 4.2.4 $\mathcal{C}^1_{\text{CQL}}$ — The Refined Penalty
+### 4.2.1.4 $\mathcal{C}^1_{\text{CQL}}$ — The Refined Penalty
 
 To correct the **aggressive** conservatism of $\mathcal{C}^0_{\text{CQL}}$, a 
 **maximization term** is introduced to balance the minimization:
